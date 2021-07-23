@@ -1,0 +1,34 @@
+#containerDojo {
+    width: 90%;
+    height: 75vh;
+    margin: 3% auto;
+    display: flex;
+}
+
+.sides {
+    height: 100%;
+    width: 50%;
+}
+
+#listOfDojos {
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2%;
+}
+
+#containerNinja {
+    width: 90%;
+    margin: 3% auto;
+    display: flex;
+    flex-direction: column;
+}
+
+#containerShow {
+    width: 80%;
+    margin: 3% auto;
+}
+
+table {
+    border-style: solid;
+}
