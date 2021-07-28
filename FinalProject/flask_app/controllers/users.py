@@ -1,6 +1,7 @@
 from flask_app import app
 from flask import render_template, redirect, request, session
 from flask_app.models.user import User
+from flask_app.models.group import Group
 from flask import flash
 from flask_bcrypt import Bcrypt
 bcrypt = Bcrypt(app)
@@ -51,24 +52,18 @@ def register():
 
 @app.route("/register_user", methods=["POST"])
 def register_user():
+
     # validate input
-    if not User.validate_registration(request.form):
-        return redirect('/')
+    # if not User.validate_registration(request.form):
+    #     return redirect('/')
 
     # hash the password
     pw_hash = bcrypt.generate_password_hash(request.form['password'])
     print(pw_hash)
-
-    # put the pw_hash into the data dictionary
-    data = {
-        # user info
-        "first_name": request.form['first_name'],
-        "last_name": request.form['last_name'],
-        "email": request.form['email'],
-        "password" : pw_hash,
-        "phone": request.form['phone'],
-        "phone_alt": request.form['phone_alt'],
-
+    pw_verify_hash = bcrypt.generate_password_hash(request.form['confirm_password'])
+    print(pw_hash)
+    # add address to address table
+    address_data = {
         # address
         "street1": request.form['street1'],
         "street2": request.form['street2'],
@@ -77,14 +72,28 @@ def register_user():
         "zipcode": request.form['zipcode'],
         "country": request.form['country'],
     }
+
+    address_id = User.add_address(address_data)
+
+    user_data = {
+        # user info
+        "first_name": request.form['first_name'],
+        "last_name": request.form['last_name'],
+        "email": request.form['email'],
+        "password" : pw_hash,
+        "pw_verify" : pw_verify_hash,
+        "phone": request.form['phone'],
+        "phone_alt": request.form['phone_alt'],
+        "address_id" : address_id
+    }
     #if email already exists
-    if User.get_user_by_email(data):
+    if User.get_user_by_email(user_data):
         flash('User with this email already exists')
-        return redirect('/')
+        return redirect('/dashboard')
 
     # Call the save method on User
-    user_id = User.save_user(data)
-    user = User.get_user_by_email(data)
+    user_id = User.save_user(user_data)
+    user = User.get_user_by_email(user_data)
     # store user id into session
     session['user_id'] = user_id
     session['first_name'] = user.first_name
@@ -98,7 +107,8 @@ def register_user():
 @app.route("/dashboard")
 def render_dashboard():
 
-    return render_template('dashboard.html')
+    groups = Group.get_all_groups()
+    return render_template('dashboard.html', groups=groups)
 
 # #**************************************
 # #   Create a Group
